@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>EPET N° 13 · Folleto en realidad aumentada</title>
+
+  <!-- Librerías por CDN (no hay que descargar nada) -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #0b2a6b; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+
+    /* Pantalla de carga */
+    #loading {
+      position: fixed; inset: 0; z-index: 20; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px; text-align: center;
+      background: #0b2a6b; color: #fff; padding: 24px; transition: opacity .5s;
+    }
+    #loading.hide { opacity: 0; pointer-events: none; }
+    #loading img { width: 120px; }
+    #loading p { margin: 0; font-size: 1.05rem; }
+    .spinner { width: 36px; height: 36px; border: 4px solid rgba(255,255,255,.3); border-top-color: #00e5ff; border-radius: 50%; animation: giro 1s linear infinite; }
+    @keyframes giro { to { transform: rotate(360deg); } }
+
+    /* Cartel que invita a apuntar al folleto */
+    #hint {
+      position: fixed; z-index: 10; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 18px);
+      transform: translateX(-50%); width: max-content; max-width: 90%;
+      background: rgba(11, 42, 107, .85); color: #fff; padding: 10px 16px; border-radius: 999px;
+      font-size: .95rem; text-align: center; transition: opacity .4s;
+    }
+    #hint.hide { opacity: 0; pointer-events: none; }
+
+    /* Botones inferiores */
+    #acciones {
+      position: fixed; z-index: 10; left: 0; right: 0; bottom: 0;
+      padding: 12px 12px calc(env(safe-area-inset-bottom, 0px) + 12px);
+      display: flex; gap: 10px; justify-content: center;
+    }
+    #acciones a {
+      flex: 1; max-width: 220px; text-align: center; text-decoration: none; font-weight: 600; font-size: .95rem;
+      padding: 12px 10px; border-radius: 12px; color: #0b2a6b; background: #00e5ff;
+    }
+    #acciones a.sec { background: #fff; }
+  </style>
+</head>
+
+<body>
+  <div id="loading">
+    <img src="logo.png" alt="Escudo de la E.P.E.T. N° 13">
+    <div class="spinner"></div>
+    <p>Preparando la cámara…<br>Aceptá el permiso para continuar.</p>
+  </div>
+
+  <div id="hint">Apuntá la cámara al folleto 📄</div>
+
+  <div id="acciones">
+    <!-- TODO: cambiá estos enlaces por los reales de la escuela -->
+    <a href="https://www.instagram.com/" target="_blank" rel="noopener">Seguinos en Instagram</a>
+    <a class="sec" href="https://wa.me/549XXXXXXXXXX" target="_blank" rel="noopener">Consultas por WhatsApp</a>
+  </div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind; maxTrack: 1; uiLoading: no; uiScanning: no; uiError: no;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-light type="ambient" intensity="1.4"></a-light>
+    <a-light type="directional" intensity="1.2" position="1 2 3"></a-light>
+
+    <!--
+      El folleto mide 1 unidad de ancho. Eje X: izquierda/derecha, Y: arriba/abajo,
+      Z: hacia afuera del papel (hacia vos).
+    -->
+    <a-entity id="folleto" mindar-image-target="targetIndex: 0">
+      <a-entity id="contenido"
+        animation__pop="property: scale; from: 0 0 0; to: 1 1 1; dur: 900; easing: easeOutBack; startEvents: pop">
+
+        <!-- Escudo de la escuela flotando -->
+        <a-image src="logo.png" width="0.55" height="0.62" position="0 0.3 0.15"
+          animation__flota="property: position; to: 0 0.36 0.2; dir: alternate; dur: 1600; easing: easeInOutSine; loop: true"></a-image>
+
+        <!-- Símbolos tech flotando alrededor -->
+        <a-text value="&lt;/&gt;" color="#00e5ff" align="center" width="1.4" position="-0.38 0.55 0.25"
+          animation__flota="property: position; to: -0.38 0.62 0.3; dir: alternate; dur: 1300; easing: easeInOutSine; loop: true"></a-text>
+        <a-text value="01" color="#00e5ff" align="center" width="1.4" position="0.4 0.5 0.25"
+          animation__flota="property: position; to: 0.4 0.57 0.3; dir: alternate; dur: 1700; easing: easeInOutSine; loop: true"></a-text>
+        <a-text value="{ }" color="#00e5ff" align="center" width="1.4" position="0.36 0.05 0.25"
+          animation__flota="property: position; to: 0.36 0.12 0.3; dir: alternate; dur: 1500; easing: easeInOutSine; loop: true"></a-text>
+
+        <!-- Modelos 3D (ver carpeta "modelos"). Ajustá scale si se ven muy grandes o chicos -->
+        <a-entity gltf-model="url(modelos/robot.glb)" position="0.22 -0.2 0.15" scale="0.3 0.3 0.3"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 9000; easing: linear"></a-entity>
+        <a-entity gltf-model="url(modelos/laptop.glb)" position="-0.25 -0.2 0.1" scale="0.3 0.3 0.3"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 12000; easing: linear"></a-entity>
+
+        <!-- Banner con mensaje -->
+        <a-plane color="#0b2a6b" opacity="0.9" width="0.95" height="0.14" position="0 -0.48 0.05"></a-plane>
+        <a-text value="¡Estudiá en la E.P.E.T. N° 13!" color="#ffffff" align="center" width="1.5" position="0 -0.48 0.06"></a-text>
+        <a-plane color="#00e5ff" opacity="0.95" width="0.95" height="0.11" position="0 -0.62 0.05"></a-plane>
+        <a-text value="Técnico en Informática Personal y Profesional" color="#0b2a6b" align="center" width="1.25" position="0 -0.62 0.06"></a-text>
+      </a-entity>
+    </a-entity>
+  </a-scene>
+
+  <script>
+    const scene = document.querySelector('a-scene');
+    const folleto = document.getElementById('folleto');
+    const contenido = document.getElementById('contenido');
+    const hint = document.getElementById('hint');
+    const loading = document.getElementById('loading');
+
+    scene.addEventListener('arReady', () => loading.classList.add('hide'));
+
+    scene.addEventListener('arError', () => {
+      loading.querySelector('.spinner').style.display = 'none';
+      loading.querySelector('p').textContent =
+        'No pudimos abrir la cámara. Revisá los permisos y que la página esté en HTTPS.';
+    });
+
+    folleto.addEventListener('targetFound', () => {
+      hint.classList.add('hide');
+      contenido.emit('pop');
+    });
+    folleto.addEventListener('targetLost', () => hint.classList.remove('hide'));
+  </script>
+</body>
+</html>
